@@ -13,24 +13,44 @@ namespace TimeClient
         static void Main(string[] args)
         {   
             Console.WriteLine("Enter any key for get datetime!!!");
+            Task.Run(() =>
+            {
+                IPEndPoint localpt = new IPEndPoint(IPAddress.Any, 8001);
+                IPEndPoint iPEndPoint1 = new IPEndPoint(IPAddress.Parse("224.5.5.5"), 8001);
+
+                UdpClient udpClient1 = new UdpClient();
+
+                udpClient1.Client.SetSocketOption(
+                SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+
+                udpClient1.Client.Bind(localpt);
+
+
+                udpClient1.JoinMulticastGroup(IPAddress.Parse("224.5.5.5"), 50);
+                while (true)
+                {
+                    // ip and port of server
+                    byte[] buffer = new byte[1024];
+                    buffer = udpClient1.Receive(ref iPEndPoint1);
+                    string date = Encoding.UTF8.GetString(buffer);
+                    Console.WriteLine($"Current date and time: {date}");
+                }
+            });
+
+            // ip and port of server
+
+
             while (true)
             {
-                Console.ReadLine();
 
-                // ip and port of server
-                IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1070);
+                IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Parse("224.5.5.5"), 8001);
 
-                // ip and port of client
-                IPEndPoint iPEndPointClient = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1080);
-                UdpClient udpClient = new UdpClient(iPEndPointClient);
+                UdpClient udpClient = new UdpClient();
+                udpClient.JoinMulticastGroup(IPAddress.Parse("224.5.5.5"), 50);
 
-                byte[] buffer = Encoding.UTF8.GetBytes("GetDate");
+                string text = Console.ReadLine();
+                byte[] buffer = Encoding.UTF8.GetBytes(text);
                 udpClient.Send(buffer, buffer.Length, iPEndPoint);
-
-                buffer = new byte[1024];
-                buffer = udpClient.Receive(ref iPEndPoint);
-                string date = Encoding.UTF8.GetString(buffer);
-                Console.WriteLine($"Current date and time: {date}");
 
                 udpClient.Close();
             }

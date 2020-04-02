@@ -12,14 +12,20 @@ namespace TimeServer
     {
         static void Main(string[] args)
         {
-            // ip and port server
-            IPEndPoint iPEndPointServer = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1070);
+            //// ip and port server
+            IPEndPoint iPEndPointServer = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1080);
 
             // ip and port client
-            IPEndPoint iPEndPointClient = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1080);
+            IPEndPoint iPEndPointClient = new IPEndPoint(IPAddress.Parse("224.5.5.5"), 1080);
 
-            UdpClient udpServer = new UdpClient(iPEndPointServer);
+            UdpClient udpServer = new UdpClient(1080);
 
+            udpServer.Client.Bind(iPEndPointServer);
+            udpServer.ExclusiveAddressUse = false;
+            udpServer.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            udpServer.ExclusiveAddressUse = false;
+
+            udpServer.JoinMulticastGroup(IPAddress.Parse("224.5.5.5"));
             while(true)
             {
                 Console.WriteLine("Wait for connection");
